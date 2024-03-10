@@ -39,7 +39,7 @@ impl Timer {
         }
     }
 
-    pub fn elapsed_ms(&self) -> f32 {
+    pub fn elapsed_time(&self) -> f32 {
         let dur = self.elapsed();
         dur.as_secs() as f32 + dur.subsec_nanos() as f32 / 1_000_000_000.0
     }
@@ -47,7 +47,7 @@ impl Timer {
 
 impl fmt::Display for Timer {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.elapsed_ms())
+        write!(f, "{}", self.elapsed_time())
     }
 }
 
@@ -57,6 +57,6 @@ fn main() {
     let _ = io::stdout().flush().unwrap();
 
     while tm.start_time.is_some() {
-        println!("{:.1$}", tm, 2)
+        println!("{:.1$} seconds", tm, 2)
     }
 }
