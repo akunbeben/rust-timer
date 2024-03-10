@@ -1,12 +1,13 @@
-use crate::timer::Timer;
+// use crate::timer::Timer;
 use mouse_position::mouse_position::Mouse;
 
-mod timer;
+// mod timer;
 
 fn main() {
-    let tm = Timer::start_timer();
+    let turn_on = true;
+    // let tm = Timer::start_timer();
 
-    while tm.start_time.is_some() {
+    while turn_on {
         let position = Mouse::get_mouse_position();
         match position {
             Mouse::Position { x, y } => print!("\rx: {}, y: {} ", x, y),

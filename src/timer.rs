@@ -4,6 +4,7 @@ use std::time::{Duration, Instant};
 
 pub struct Timer {
     pub start_time: Option<Instant>,
+    pub latest_time: Option<Instant>,
     pub elapsed: Duration,
 }
 
@@ -11,6 +12,8 @@ impl Default for Timer {
     fn default() -> Timer {
         Timer {
             start_time: None,
+            latest_time: None,
+            idle_time: None,
             elapsed: Duration::from_secs(0),
         }
     }
@@ -23,6 +26,15 @@ impl Timer {
 
     pub fn start(&mut self) {
         self.start_time = Some(Instant::now());
+    }
+
+    pub fn stop(&mut self) {
+        self.latest_time = self.start_time;
+        self.start_time = None;
+    }
+
+    pub fn sum_idle(&mut self) {
+        self.idle_time = self.idle_time;
     }
 
     pub fn start_timer() -> Timer {
