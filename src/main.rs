@@ -3,7 +3,6 @@ use std::io::Write;
 use std::{fmt, io};
 use std::time::{Duration, Instant};
 
-#[derive(Debug)]
 pub struct Timer {
     start_time: Option<Instant>,
     elapsed: Duration,
