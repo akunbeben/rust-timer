@@ -1,6 +1,5 @@
 use std::default::Default;
-use std::io::Write;
-use std::{fmt, io};
+use std::fmt;
 use std::time::{Duration, Instant};
 
 pub struct Timer {
@@ -54,9 +53,7 @@ impl fmt::Display for Timer {
 fn main() {
     let tm = Timer::start_timer();
 
-    let _ = io::stdout().flush().unwrap();
-
     while tm.start_time.is_some() {
-        println!("{:.1$} seconds", tm, 2)
+        print!("\r{:.1$}", tm, 2)
     }
 }
