@@ -1,59 +1,16 @@
-use std::default::Default;
-use std::fmt;
-use std::time::{Duration, Instant};
+use crate::timer::Timer;
+use mouse_position::mouse_position::Mouse;
 
-pub struct Timer {
-    start_time: Option<Instant>,
-    elapsed: Duration,
-}
-
-impl Default for Timer {
-    fn default() -> Timer {
-        Timer {
-            start_time: None,
-            elapsed: Duration::from_secs(0),
-        }
-    }
-}
-
-impl Timer {
-    pub fn new() -> Timer {
-        Default::default()
-    }
-
-    pub fn start(&mut self) {
-        self.start_time = Some(Instant::now());
-    }
-
-    pub fn start_timer() -> Timer {
-        let mut tm = Timer::new();
-        tm.start();
-        tm
-    }
-
-    pub fn elapsed(&self) -> Duration {
-        match self.start_time {
-            Some(timer) => timer.elapsed() + self.elapsed,
-            None => self.elapsed,
-        }
-    }
-
-    pub fn elapsed_time(&self) -> f32 {
-        let dur = self.elapsed();
-        dur.as_secs() as f32 + dur.subsec_nanos() as f32 / 1_000_000_000.0
-    }
-}
-
-impl fmt::Display for Timer {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.elapsed_time())
-    }
-}
+mod timer;
 
 fn main() {
     let tm = Timer::start_timer();
 
     while tm.start_time.is_some() {
-        print!("\r{:.1$}", tm, 2)
+        let position = Mouse::get_mouse_position();
+        match position {
+            Mouse::Position { x, y } => print!("\rx: {}, y: {}", x, y),
+            Mouse::Error => print!("\rError getting mouse position"),
+       }
     }
 }
