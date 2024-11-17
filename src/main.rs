@@ -1,7 +1,8 @@
 use chrono::Local;
 use rusqlite::{Connection, Result};
-use std::thread;
+use std::path::PathBuf;
 use std::time::Duration;
+use std::{env, thread};
 use user_idle::UserIdle;
 
 #[derive(Debug)]
@@ -16,12 +17,13 @@ fn main() -> Result<()> {
     let mut idle_duration: u64 = 0;
     let mut is_idle = false;
 
-    let db_file = if let Some(home_dir) = dirs::home_dir() {
-        home_dir.join("rust-timer.sqlite")
-    } else {
-        println!("Could not determine the home directory.");
-        std::process::exit(1);
-    };
+    let db_file = env::var("HOME")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| {
+            println!("Could not determine the home directory from $HOME.");
+            std::process::exit(1);
+        })
+        .join("rust-timer.sqlite");
 
     println!(
         "[{}]: Using database file at {}.",
