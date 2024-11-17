@@ -24,7 +24,7 @@ fn main() -> Result<()> {
     };
 
     println!(
-        "\n[{}]: Using database file at {}.",
+        "[{}]: Using database file at {}.",
         Local::now().format("%y-%m-%d %H:%M"),
         db_file.display()
     );
@@ -63,7 +63,7 @@ fn main() -> Result<()> {
             .unwrap();
 
             println!(
-                "\n[{}]: Active again. Idle duration: {} seconds inserted.",
+                "[{}]: Active again. Idle duration: {} seconds inserted.",
                 Local::now().format("%y-%m-%d %H:%M"),
                 idle_duration
             );
@@ -74,7 +74,7 @@ fn main() -> Result<()> {
         if idle_seconds > threshold {
             if !is_idle {
                 println!(
-                    "\n[{}]: System is idle...",
+                    "[{}]: System is idle...",
                     Local::now().format("%y-%m-%d %H:%M")
                 );
             }
