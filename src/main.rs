@@ -1,6 +1,8 @@
-use user_idle::UserIdle;
-use rusqlite::{params, Connection, Result};
 use chrono::Local;
+use rusqlite::{Connection, Result};
+use std::thread;
+use std::time::Duration;
+use user_idle::UserIdle;
 
 #[derive(Debug)]
 struct Data {
@@ -10,41 +12,63 @@ struct Data {
 }
 
 fn main() -> Result<()> {
-    let daemonized = true;
-    let threshold = 5;
+    let threshold = 60;
     let mut idle_duration: u64 = 0;
-    let conn = Connection::open_in_memory()?;
+    let mut is_idle = false;
+    let conn = Connection::open("db.sqlite").unwrap();
 
-    while daemonized {
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS data (
+            id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+            date DATETIME NOT NULL UNIQUE,
+            duration BIGINT NOT NULL
+        )",
+        [],
+    )?;
+
+    loop {
         let idle = UserIdle::get_time().unwrap();
+        let idle_seconds = idle.as_seconds();
 
-        conn.execute(
-            "CREATE TABLE IF NOT EXISTS data (id INTEGER PRIMARY KEY, date DATE NOT NULL, duration BIGINT NOT NULL)",
-            [],
-        )?;
+        if is_idle && idle_seconds <= threshold {
+            let mut stmt = conn.prepare("SELECT MAX(id) FROM data")?;
+            let max_id: Option<i32> = stmt.query_row([], |row| row.get(0)).unwrap_or(None);
 
-        if idle.as_seconds() > threshold {
-            idle_duration = idle.as_seconds() - threshold;
+            let new_id = max_id.unwrap_or(0) + 1;
 
             let prepared = Data {
-                id: 0,
-                date: Local::now().format("%Y-%m-%d").to_string(),
+                id: new_id,
+                date: Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
                 duration: idle_duration,
             };
 
-            let _ = conn.execute("
-                INSERT OR REPLACE INTO data (id, date, duration) values (
-                    (SELECT id FROM data WHERE date = ?1),
-                    (SELECT date FROM data WHERE date = ?1),
-                    ?2
-                )
-            ", params![prepared.date, prepared.duration]);
+            conn.execute(
+                "INSERT INTO data (id, date, duration) VALUES (?1, ?2, ?3)",
+                (prepared.id, prepared.date, prepared.duration),
+            )
+            .unwrap();
 
-            print!("\r{}", idle_duration);
-        } else {
-            print!("\r{}", idle_duration);
+            println!(
+                "\n[{}]: Active again. Idle duration: {} seconds inserted.",
+                Local::now().format("%y-%m-%d %H:%M"),
+                idle_duration
+            );
+
+            is_idle = false;
         }
-    }
 
-    Ok(())
+        if idle_seconds > threshold {
+            if !is_idle {
+                println!(
+                    "\n[{}]: System is idle...",
+                    Local::now().format("%y-%m-%d %H:%M")
+                );
+            }
+
+            is_idle = true;
+            idle_duration = idle_seconds - threshold;
+        }
+
+        thread::sleep(Duration::from_secs(1));
+    }
 }
