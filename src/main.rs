@@ -15,7 +15,21 @@ fn main() -> Result<()> {
     let threshold = 60;
     let mut idle_duration: u64 = 0;
     let mut is_idle = false;
-    let conn = Connection::open("db.sqlite").unwrap();
+
+    let db_file = if let Some(home_dir) = dirs::home_dir() {
+        home_dir.join("rust-timer.sqlite")
+    } else {
+        println!("Could not determine the home directory.");
+        std::process::exit(1);
+    };
+
+    println!(
+        "\n[{}]: Using database file at {}.",
+        Local::now().format("%y-%m-%d %H:%M"),
+        db_file.display()
+    );
+
+    let conn = Connection::open(&db_file).unwrap();
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS data (
